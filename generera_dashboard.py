@@ -258,20 +258,8 @@ def generera_tabell(titel, df, dimension_namn, max_rader=10):
     """
 
 
-def generera_dashboard():
-    """Huvudfunktion för att generera dashboard."""
-    
-    # Hitta CSV-filen
-    csv_fil = Path(__file__).parent / "8520e6e8-926a-4264-b6ad-e545036fe730 - Sheet1.csv"
-    
-    # Ladda data
-    df = ladda_data(csv_fil)
-    
-    # Filtrera perioder
-    okt_2025 = filtrera_period(df, 2025, 10)
-    okt_2024 = filtrera_period(df, 2024, 10)
-    sep_2025 = filtrera_period(df, 2025, 9)
-    
+def generera_innehåll_för_filter(df, okt_2025, okt_2024, sep_2025, filter_namn):
+    """Generera KPI och tabeller för ett specifikt filter."""
     # Beräkna KPI:er
     kpi_okt_2025 = beräkna_huvud_kpi(okt_2025)
     kpi_okt_2024 = beräkna_huvud_kpi(okt_2024)
@@ -282,11 +270,7 @@ def generera_dashboard():
     mom = jämför_perioder(kpi_okt_2025, kpi_sep_2025)
     
     # Generera kombinerade KPI-kort
-    kpi_cards_kombinerade = f"""
-        <div class="section-header">
-            <h2>Nyckeltal Oktober 2025</h2>
-            <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
-        </div>
+    kpi_cards = f"""
         <div class="kpi-grid">
             {generera_kpi_card_kombinerad("Ordervärde", 
                 kpi_okt_2025['Ordervärde'], kpi_okt_2024['Ordervärde'], kpi_sep_2025['Ordervärde'],
@@ -303,30 +287,64 @@ def generera_dashboard():
         </div>
     """
     
-    # Analysera dimensioner med både YoY och MoM
+    # Analysera dimensioner (exkludera SäljKanal om vi filtrerar på den)
     kampanj_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'KampanjKod', top_n=8, exkludera_värden=['Kod saknas'])
-    säljkanal_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'SäljKanal', top_n=5)
     anställda_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'Antal anställda', top_n=8)
     bolagsform_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'Bolagsform', top_n=5)
     kundtyp_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'Kundtyp', top_n=5)
     sni_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'SNI', top_n=10, exkludera_värden=['-'])
     
-    # Generera tabeller
+    # Generera tabeller (visa säljkanal endast för "Alla")
+    if filter_namn == "Alla":
+        säljkanal_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'SäljKanal', top_n=5)
+        säljkanal_tabell = generera_tabell("Säljkanaler", säljkanal_analys, 'SäljKanal', 5)
+    else:
+        säljkanal_tabell = ""
+    
     tabeller = f"""
-        <div class="section-header">
-            <h2>Detaljerad Analys</h2>
-            <p class="subtitle">Top-prestationer och trender per dimension</p>
-        </div>
-        
         <div class="tables-grid">
             {generera_tabell("Kundtyp", kundtyp_analys, 'Kundtyp', 5)}
-            {generera_tabell("Säljkanaler", säljkanal_analys, 'SäljKanal', 5)}
+            {säljkanal_tabell}
             {generera_tabell("Top Kampanjkoder", kampanj_analys, 'KampanjKod', 8)}
             {generera_tabell("Antal Anställda", anställda_analys, 'Antal anställda', 8)}
             {generera_tabell("Bolagsform", bolagsform_analys, 'Bolagsform', 5)}
             {generera_tabell("Top SNI-koder", sni_analys, 'SNI', 10)}
         </div>
     """
+    
+    return kpi_cards, tabeller
+
+
+def generera_dashboard():
+    """Huvudfunktion för att generera dashboard."""
+    
+    # Hitta CSV-filen
+    csv_fil = Path(__file__).parent / "8520e6e8-926a-4264-b6ad-e545036fe730 - Sheet1.csv"
+    
+    # Ladda data
+    df = ladda_data(csv_fil)
+    
+    # Filtrera perioder för ALLA kanaler
+    okt_2025_alla = filtrera_period(df, 2025, 10)
+    okt_2024_alla = filtrera_period(df, 2024, 10)
+    sep_2025_alla = filtrera_period(df, 2025, 9)
+    
+    # Filtrera för Fortnox.Se
+    df_fortnox_se = df[df['SäljKanal'] == 'Fortnox.Se']
+    okt_2025_se = filtrera_period(df_fortnox_se, 2025, 10)
+    okt_2024_se = filtrera_period(df_fortnox_se, 2024, 10)
+    sep_2025_se = filtrera_period(df_fortnox_se, 2025, 9)
+    
+    # Filtrera för Fortnox (säljare)
+    df_fortnox = df[df['SäljKanal'] == 'Fortnox']
+    okt_2025_fortnox = filtrera_period(df_fortnox, 2025, 10)
+    okt_2024_fortnox = filtrera_period(df_fortnox, 2024, 10)
+    sep_2025_fortnox = filtrera_period(df_fortnox, 2025, 9)
+    
+    # Generera innehåll för alla tre filter
+    kpi_cards_alla, tabeller_alla = generera_innehåll_för_filter(df, okt_2025_alla, okt_2024_alla, sep_2025_alla, "Alla")
+    kpi_cards_se, tabeller_se = generera_innehåll_för_filter(df_fortnox_se, okt_2025_se, okt_2024_se, sep_2025_se, "Fortnox.Se")
+    kpi_cards_fortnox, tabeller_fortnox = generera_innehåll_för_filter(df_fortnox, okt_2025_fortnox, okt_2024_fortnox, sep_2025_fortnox, "Fortnox")
     
     # Skapa HTML-dokument
     html_content = f"""
@@ -895,6 +913,55 @@ def generera_dashboard():
         .content-hidden {{
             display: none;
         }}
+        
+        /* Filter-knappar styling */
+        .filter-section {{
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+            text-align: center;
+        }}
+        
+        .filter-label {{
+            color: var(--fortnox-navy);
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            display: block;
+        }}
+        
+        .filter-buttons {{
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }}
+        
+        .filter-button {{
+            padding: 0.75rem 2rem;
+            border: 2px solid var(--fortnox-border);
+            background: white;
+            color: var(--fortnox-navy);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }}
+        
+        .filter-button:hover {{
+            border-color: var(--fortnox-green);
+            color: var(--fortnox-green);
+        }}
+        
+        .filter-button.active {{
+            background: var(--fortnox-green);
+            color: white;
+            border-color: var(--fortnox-green);
+        }}
     </style>
     <script>
         // Lösenordsskydd
@@ -969,12 +1036,74 @@ def generera_dashboard():
             </div>
         </div>
         
-        <div class="section">
-            {kpi_cards_kombinerade}
+        <!-- Filter-knappar -->
+        <div class="filter-section">
+            <span class="filter-label">Filtrera på säljkanal:</span>
+            <div class="filter-buttons">
+                <button class="filter-button active" onclick="switchFilter('alla')" data-filter="alla">
+                    📊 Alla kanaler
+                </button>
+                <button class="filter-button" onclick="switchFilter('fortnox-se')" data-filter="fortnox-se">
+                    🌐 Fortnox.Se
+                </button>
+                <button class="filter-button" onclick="switchFilter('fortnox')" data-filter="fortnox">
+                    👤 Fortnox (Säljare)
+                </button>
+            </div>
         </div>
         
-        <div class="section">
-            {tabeller}
+        <!-- KPI-sektion för "Alla" -->
+        <div class="section" id="kpi-alla" data-filter-content="alla">
+            <div class="section-header">
+                <h2>Nyckeltal Oktober 2025</h2>
+                <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
+            </div>
+            {kpi_cards_alla}
+        </div>
+        
+        <!-- KPI-sektion för "Fortnox.Se" -->
+        <div class="section" id="kpi-fortnox-se" data-filter-content="fortnox-se" style="display: none;">
+            <div class="section-header">
+                <h2>Nyckeltal Oktober 2025 - Fortnox.Se</h2>
+                <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
+            </div>
+            {kpi_cards_se}
+        </div>
+        
+        <!-- KPI-sektion för "Fortnox (Säljare)" -->
+        <div class="section" id="kpi-fortnox" data-filter-content="fortnox" style="display: none;">
+            <div class="section-header">
+                <h2>Nyckeltal Oktober 2025 - Fortnox (Säljare)</h2>
+                <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
+            </div>
+            {kpi_cards_fortnox}
+        </div>
+        
+        <!-- Detaljerad analys för "Alla" -->
+        <div class="section" id="tabeller-alla" data-filter-content="alla">
+            <div class="section-header">
+                <h2>Detaljerad Analys</h2>
+                <p class="subtitle">Top-prestationer och trender per dimension</p>
+            </div>
+            {tabeller_alla}
+        </div>
+        
+        <!-- Detaljerad analys för "Fortnox.Se" -->
+        <div class="section" id="tabeller-fortnox-se" data-filter-content="fortnox-se" style="display: none;">
+            <div class="section-header">
+                <h2>Detaljerad Analys - Fortnox.Se</h2>
+                <p class="subtitle">Top-prestationer och trender per dimension</p>
+            </div>
+            {tabeller_se}
+        </div>
+        
+        <!-- Detaljerad analys för "Fortnox (Säljare)" -->
+        <div class="section" id="tabeller-fortnox" data-filter-content="fortnox" style="display: none;">
+            <div class="section-header">
+                <h2>Detaljerad Analys - Fortnox (Säljare)</h2>
+                <p class="subtitle">Top-prestationer och trender per dimension</p>
+            </div>
+            {tabeller_fortnox}
         </div>
         
         <div class="footer">
@@ -983,6 +1112,26 @@ def generera_dashboard():
         </div>
     </div>
     </div> <!-- Stäng mainContent div -->
+    
+    <script>
+        // Funktion för att växla mellan filter
+        function switchFilter(filterName) {{
+            // Uppdatera aktiv knapp
+            document.querySelectorAll('.filter-button').forEach(btn => {{
+                btn.classList.remove('active');
+            }});
+            document.querySelector(`[data-filter="${{filterName}}"]`).classList.add('active');
+            
+            // Visa/dölj innehåll
+            document.querySelectorAll('[data-filter-content]').forEach(section => {{
+                if (section.getAttribute('data-filter-content') === filterName) {{
+                    section.style.display = 'block';
+                }} else {{
+                    section.style.display = 'none';
+                }}
+            }});
+        }}
+    </script>
 </body>
 </html>
     """

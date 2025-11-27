@@ -564,6 +564,55 @@
         .content-hidden {
             display: none;
         }
+        
+        /* Filter-knappar styling */
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .filter-label {
+            color: var(--fortnox-navy);
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-button {
+            padding: 0.75rem 2rem;
+            border: 2px solid var(--fortnox-border);
+            background: white;
+            color: var(--fortnox-navy);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-button:hover {
+            border-color: var(--fortnox-green);
+            color: var(--fortnox-green);
+        }
+        
+        .filter-button.active {
+            background: var(--fortnox-green);
+            color: white;
+            border-color: var(--fortnox-green);
+        }
     </style>
     <script>
         // Lösenordsskydd
@@ -632,18 +681,35 @@
         <div class="header">
             <h1>📊 Försäljningsrapport Oktober 2025</h1>
             <div class="header-meta">
-                Genererad: 2025-11-27 10:33 | 
+                Genererad: 2025-11-27 13:10 | 
                 Period: Oktober 2025 | 
                 Jämförelser: YoY & MoM
             </div>
         </div>
         
-        <div class="section">
-            
-        <div class="section-header">
-            <h2>Nyckeltal Oktober 2025</h2>
-            <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
+        <!-- Filter-knappar -->
+        <div class="filter-section">
+            <span class="filter-label">Filtrera på säljkanal:</span>
+            <div class="filter-buttons">
+                <button class="filter-button active" onclick="switchFilter('alla')" data-filter="alla">
+                    📊 Alla kanaler
+                </button>
+                <button class="filter-button" onclick="switchFilter('fortnox-se')" data-filter="fortnox-se">
+                    🌐 Fortnox.Se
+                </button>
+                <button class="filter-button" onclick="switchFilter('fortnox')" data-filter="fortnox">
+                    👤 Fortnox (Säljare)
+                </button>
+            </div>
         </div>
+        
+        <!-- KPI-sektion för "Alla" -->
+        <div class="section" id="kpi-alla" data-filter-content="alla">
+            <div class="section-header">
+                <h2>Nyckeltal Oktober 2025</h2>
+                <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
+            </div>
+            
         <div class="kpi-grid">
             
     <div class="kpi-card">
@@ -745,13 +811,229 @@
     
         </div>
         
-        <div class="section">
+        <!-- KPI-sektion för "Fortnox.Se" -->
+        <div class="section" id="kpi-fortnox-se" data-filter-content="fortnox-se" style="display: none;">
+            <div class="section-header">
+                <h2>Nyckeltal Oktober 2025 - Fortnox.Se</h2>
+                <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
+            </div>
             
-        <div class="section-header">
-            <h2>Detaljerad Analys</h2>
-            <p class="subtitle">Top-prestationer och trender per dimension</p>
+        <div class="kpi-grid">
+            
+    <div class="kpi-card">
+        <div class="kpi-title">Ordervärde</div>
+        <div class="kpi-value">545,899 kr</div>
+        <div class="kpi-comparisons">
+            <div class="comparison-row">
+                <span class="comparison-label">YoY:</span>
+                <span class="comparison-value">vs Okt 2024: 447,839 kr</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    +21.9%
+                </span>
+            </div>
+            <div class="comparison-row">
+                <span class="comparison-label">MoM:</span>
+                <span class="comparison-value">vs Sep 2025: 498,588 kr</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    +9.5%
+                </span>
+            </div>
+        </div>
+    </div>
+    
+            
+    <div class="kpi-card">
+        <div class="kpi-title">Försäljning</div>
+        <div class="kpi-value">423,146</div>
+        <div class="kpi-comparisons">
+            <div class="comparison-row">
+                <span class="comparison-label">YoY:</span>
+                <span class="comparison-value">vs Okt 2024: 364,366</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    +16.1%
+                </span>
+            </div>
+            <div class="comparison-row">
+                <span class="comparison-label">MoM:</span>
+                <span class="comparison-value">vs Sep 2025: 386,052</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    +9.6%
+                </span>
+            </div>
+        </div>
+    </div>
+    
+            
+    <div class="kpi-card">
+        <div class="kpi-title">Försäljningsantal</div>
+        <div class="kpi-value">1,550</div>
+        <div class="kpi-comparisons">
+            <div class="comparison-row">
+                <span class="comparison-label">YoY:</span>
+                <span class="comparison-value">vs Okt 2024: 1,444</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    +7.3%
+                </span>
+            </div>
+            <div class="comparison-row">
+                <span class="comparison-label">MoM:</span>
+                <span class="comparison-value">vs Sep 2025: 1,475</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    +5.1%
+                </span>
+            </div>
+        </div>
+    </div>
+    
+            
+    <div class="kpi-card">
+        <div class="kpi-title">Rabatt%</div>
+        <div class="kpi-value">22.49%</div>
+        <div class="kpi-comparisons">
+            <div class="comparison-row">
+                <span class="comparison-label">YoY:</span>
+                <span class="comparison-value">vs Okt 2024: 18.64%</span>
+                <span class="kpi-change-inline negative">
+                    <span class="arrow-small">↓</span>
+                    +3.85pp
+                </span>
+            </div>
+            <div class="comparison-row">
+                <span class="comparison-label">MoM:</span>
+                <span class="comparison-value">vs Sep 2025: 22.57%</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    -0.08pp
+                </span>
+            </div>
+        </div>
+    </div>
+    
+        </div>
+    
         </div>
         
+        <!-- KPI-sektion för "Fortnox (Säljare)" -->
+        <div class="section" id="kpi-fortnox" data-filter-content="fortnox" style="display: none;">
+            <div class="section-header">
+                <h2>Nyckeltal Oktober 2025 - Fortnox (Säljare)</h2>
+                <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
+            </div>
+            
+        <div class="kpi-grid">
+            
+    <div class="kpi-card">
+        <div class="kpi-title">Ordervärde</div>
+        <div class="kpi-value">579,864 kr</div>
+        <div class="kpi-comparisons">
+            <div class="comparison-row">
+                <span class="comparison-label">YoY:</span>
+                <span class="comparison-value">vs Okt 2024: 563,138 kr</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    +3.0%
+                </span>
+            </div>
+            <div class="comparison-row">
+                <span class="comparison-label">MoM:</span>
+                <span class="comparison-value">vs Sep 2025: 568,512 kr</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    +2.0%
+                </span>
+            </div>
+        </div>
+    </div>
+    
+            
+    <div class="kpi-card">
+        <div class="kpi-title">Försäljning</div>
+        <div class="kpi-value">403,558</div>
+        <div class="kpi-comparisons">
+            <div class="comparison-row">
+                <span class="comparison-label">YoY:</span>
+                <span class="comparison-value">vs Okt 2024: 408,171</span>
+                <span class="kpi-change-inline negative">
+                    <span class="arrow-small">↓</span>
+                    -1.1%
+                </span>
+            </div>
+            <div class="comparison-row">
+                <span class="comparison-label">MoM:</span>
+                <span class="comparison-value">vs Sep 2025: 395,172</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    +2.1%
+                </span>
+            </div>
+        </div>
+    </div>
+    
+            
+    <div class="kpi-card">
+        <div class="kpi-title">Försäljningsantal</div>
+        <div class="kpi-value">834</div>
+        <div class="kpi-comparisons">
+            <div class="comparison-row">
+                <span class="comparison-label">YoY:</span>
+                <span class="comparison-value">vs Okt 2024: 966</span>
+                <span class="kpi-change-inline negative">
+                    <span class="arrow-small">↓</span>
+                    -13.7%
+                </span>
+            </div>
+            <div class="comparison-row">
+                <span class="comparison-label">MoM:</span>
+                <span class="comparison-value">vs Sep 2025: 812</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    +2.7%
+                </span>
+            </div>
+        </div>
+    </div>
+    
+            
+    <div class="kpi-card">
+        <div class="kpi-title">Rabatt%</div>
+        <div class="kpi-value">30.40%</div>
+        <div class="kpi-comparisons">
+            <div class="comparison-row">
+                <span class="comparison-label">YoY:</span>
+                <span class="comparison-value">vs Okt 2024: 27.52%</span>
+                <span class="kpi-change-inline negative">
+                    <span class="arrow-small">↓</span>
+                    +2.89pp
+                </span>
+            </div>
+            <div class="comparison-row">
+                <span class="comparison-label">MoM:</span>
+                <span class="comparison-value">vs Sep 2025: 30.49%</span>
+                <span class="kpi-change-inline positive">
+                    <span class="arrow-small">↑</span>
+                    -0.09pp
+                </span>
+            </div>
+        </div>
+    </div>
+    
+        </div>
+    
+        </div>
+        
+        <!-- Detaljerad analys för "Alla" -->
+        <div class="section" id="tabeller-alla" data-filter-content="alla">
+            <div class="section-header">
+                <h2>Detaljerad Analys</h2>
+                <p class="subtitle">Top-prestationer och trender per dimension</p>
+            </div>
+            
         <div class="tables-grid">
             
     <div class="table-card">
@@ -1320,12 +1602,1096 @@
     
         </div>
         
+        <!-- Detaljerad analys för "Fortnox.Se" -->
+        <div class="section" id="tabeller-fortnox-se" data-filter-content="fortnox-se" style="display: none;">
+            <div class="section-header">
+                <h2>Detaljerad Analys - Fortnox.Se</h2>
+                <p class="subtitle">Top-prestationer och trender per dimension</p>
+            </div>
+            
+        <div class="tables-grid">
+            
+    <div class="table-card">
+        <h3>Kundtyp</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Kundtyp</th>
+                    <th>Antal</th>
+                    <th>YoY %</th>
+                    <th>MoM %</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="dimension-name">FÖRETAG</td>
+            <td class="number">1,504</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +7.1%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +3.1%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">BYRÅ</td>
+            <td class="number">46</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +15.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +187.5%
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+            
+            
+    <div class="table-card">
+        <h3>Top Kampanjkoder</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>KampanjKod</th>
+                    <th>Antal</th>
+                    <th>YoY %</th>
+                    <th>MoM %</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="dimension-name">NYSTARTAD</td>
+            <td class="number">416</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -13.9%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -15.1%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">GRATTISNYSTARTAD</td>
+            <td class="number">311</td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +28.5%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">LAGERBOLAG</td>
+            <td class="number">43</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +258.3%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +95.5%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">NYFTGSTART</td>
+            <td class="number">24</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -27.3%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -11.1%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">NYSTARTADEF</td>
+            <td class="number">22</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +4.8%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -8.3%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">SEBFORTNOX</td>
+            <td class="number">12</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +33.3%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +9.1%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">VARVAD</td>
+            <td class="number">7</td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -46.2%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">HANDELSBANKEN25</td>
+            <td class="number">7</td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +600.0%
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+            
+    <div class="table-card">
+        <h3>Antal Anställda</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Antal anställda</th>
+                    <th>Antal</th>
+                    <th>YoY %</th>
+                    <th>MoM %</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="dimension-name">0 anställda</td>
+            <td class="number">1,198</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +8.7%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +3.1%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">1-4 anställda</td>
+            <td class="number">207</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -4.6%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +3.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">Okänt</td>
+            <td class="number">110</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +50.7%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +42.9%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">5-9 anställda</td>
+            <td class="number">20</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -13.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +11.1%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">10-19 anställda</td>
+            <td class="number">10</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -9.1%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +66.7%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">20-49 anställda</td>
+            <td class="number">2</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -80.0%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -50.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">50-99 anställda</td>
+            <td class="number">1</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -66.7%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -50.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">-</td>
+            <td class="number">0</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -100.0%
+            </td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+            
+    <div class="table-card">
+        <h3>Bolagsform</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Bolagsform</th>
+                    <th>Antal</th>
+                    <th>YoY %</th>
+                    <th>MoM %</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="dimension-name">AB</td>
+            <td class="number">933</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +9.3%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +7.6%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">EF</td>
+            <td class="number">467</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +0.6%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -6.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">OVR</td>
+            <td class="number">57</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -10.9%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -6.6%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">HB/KB</td>
+            <td class="number">22</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -8.3%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +120.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">Okänt</td>
+            <td class="number">71</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +86.8%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +77.5%
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+            
+    <div class="table-card">
+        <h3>Top SNI-koder</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>SNI</th>
+                    <th>Antal</th>
+                    <th>YoY %</th>
+                    <th>MoM %</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="dimension-name">70220 - Konsultverksamhet avseende företags organisation</td>
+            <td class="number">79</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -35.8%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -24.8%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">62010 - Dataprogrammering</td>
+            <td class="number">68</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +11.5%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +33.3%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">69201 - Redovisning och bokföring; skatterådgivning</td>
+            <td class="number">36</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -21.7%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +89.5%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">43320 - Byggnadssnickeriarbeten</td>
+            <td class="number">31</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +14.8%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +6.9%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">41200 - Byggande av bostadshus och andra byggnader</td>
+            <td class="number">38</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +15.2%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -2.6%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">56100 - Restaurangverksamhet</td>
+            <td class="number">28</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +3.7%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +27.3%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">71121 - Teknisk konsultverksamhet inom bygg- och anläggningsteknik</td>
+            <td class="number">27</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +17.4%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +28.6%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">62020 - Datakonsultverksamhet</td>
+            <td class="number">35</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +20.7%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -2.8%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">43210 - Elinstallationer</td>
+            <td class="number">20</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +100.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +11.1%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">43120 - Mark- och grundarbeten</td>
+            <td class="number">24</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +14.3%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +9.1%
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+        </div>
+    
+        </div>
+        
+        <!-- Detaljerad analys för "Fortnox (Säljare)" -->
+        <div class="section" id="tabeller-fortnox" data-filter-content="fortnox" style="display: none;">
+            <div class="section-header">
+                <h2>Detaljerad Analys - Fortnox (Säljare)</h2>
+                <p class="subtitle">Top-prestationer och trender per dimension</p>
+            </div>
+            
+        <div class="tables-grid">
+            
+    <div class="table-card">
+        <h3>Kundtyp</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Kundtyp</th>
+                    <th>Antal</th>
+                    <th>YoY %</th>
+                    <th>MoM %</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="dimension-name">FÖRETAG</td>
+            <td class="number">768</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -15.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +3.4%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">BYRÅ</td>
+            <td class="number">66</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +6.5%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -4.3%
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+            
+            
+    <div class="table-card">
+        <h3>Top Kampanjkoder</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>KampanjKod</th>
+                    <th>Antal</th>
+                    <th>YoY %</th>
+                    <th>MoM %</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="dimension-name">NYSTARTAD</td>
+            <td class="number">184</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -16.4%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +2.2%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">LAGERBOLAG2023</td>
+            <td class="number">90</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -18.9%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +5.9%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">LAGERBOLAG</td>
+            <td class="number">85</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +123.7%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -1.2%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">BYRAPARTNERSALES20256</td>
+            <td class="number">36</td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +20.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">SANJIN</td>
+            <td class="number">2</td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -71.4%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">FIELDLY</td>
+            <td class="number">18</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +350.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +260.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">SEBFORTNOX</td>
+            <td class="number">18</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +500.0%
+            </td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">NYOFFERTA</td>
+            <td class="number">10</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +66.7%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +150.0%
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+            
+    <div class="table-card">
+        <h3>Antal Anställda</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Antal anställda</th>
+                    <th>Antal</th>
+                    <th>YoY %</th>
+                    <th>MoM %</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="dimension-name">0 anställda</td>
+            <td class="number">506</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -14.1%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -1.4%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">1-4 anställda</td>
+            <td class="number">211</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -15.6%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +2.9%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">20-49 anställda</td>
+            <td class="number">31</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +29.2%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +210.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">5-9 anställda</td>
+            <td class="number">31</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -40.4%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -13.9%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">50-99 anställda</td>
+            <td class="number">9</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +200.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +125.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">10-19 anställda</td>
+            <td class="number">27</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -6.9%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +3.8%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">200-499 anställda</td>
+            <td class="number">1</td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">100-199 anställda</td>
+            <td class="number">5</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +400.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +25.0%
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+            
+    <div class="table-card">
+        <h3>Bolagsform</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Bolagsform</th>
+                    <th>Antal</th>
+                    <th>YoY %</th>
+                    <th>MoM %</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="dimension-name">AB</td>
+            <td class="number">640</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -13.0%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -0.9%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">EF</td>
+            <td class="number">132</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -20.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +7.3%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">OVR</td>
+            <td class="number">40</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -16.7%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +29.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">HB/KB</td>
+            <td class="number">14</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +75.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +180.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">Okänt</td>
+            <td class="number">8</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -11.1%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +14.3%
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+            
+    <div class="table-card">
+        <h3>Top SNI-koder</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>SNI</th>
+                    <th>Antal</th>
+                    <th>YoY %</th>
+                    <th>MoM %</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="dimension-name">69201 - Redovisning och bokföring; skatterådgivning</td>
+            <td class="number">80</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -1.2%
+            </td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">70100 - Verksamheter som utövas av huvudkontor</td>
+            <td class="number">6</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -33.3%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -45.5%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">56100 - Restaurangverksamhet</td>
+            <td class="number">33</td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +3.1%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +43.5%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">70220 - Konsultverksamhet avseende företags organisation</td>
+            <td class="number">42</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -36.4%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -6.7%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">41200 - Byggande av bostadshus och andra byggnader</td>
+            <td class="number">15</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -37.5%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -25.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">46510 - Partihandel med datorer och kringutrustning samt programvara</td>
+            <td class="number">2</td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -50.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">43210 - Elinstallationer</td>
+            <td class="number">11</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -52.2%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -15.4%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">64201 - Holdingverksamhet i finansiella koncerner</td>
+            <td class="number">4</td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">62020 - Datakonsultverksamhet</td>
+            <td class="number">15</td>
+            <td class="number neutral">
+                <span class="arrow-small">→</span>
+                +0.0%
+            </td>
+            <td class="number positive">
+                <span class="arrow-small">↑</span>
+                +50.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="dimension-name">43120 - Mark- och grundarbeten</td>
+            <td class="number">6</td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -40.0%
+            </td>
+            <td class="number negative">
+                <span class="arrow-small">↓</span>
+                -50.0%
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+        </div>
+    
+        </div>
+        
         <div class="footer">
             <p>Rapport genererad med Fortnox Analytics Tool</p>
             <p>© 2025 Fortnox AB. Alla rättigheter förbehållna.</p>
         </div>
     </div>
     </div> <!-- Stäng mainContent div -->
+    
+    <script>
+        // Funktion för att växla mellan filter
+        function switchFilter(filterName) {
+            // Uppdatera aktiv knapp
+            document.querySelectorAll('.filter-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-filter="${filterName}"]`).classList.add('active');
+            
+            // Visa/dölj innehåll
+            document.querySelectorAll('[data-filter-content]').forEach(section => {
+                if (section.getAttribute('data-filter-content') === filterName) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 </html>
     
