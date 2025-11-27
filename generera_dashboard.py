@@ -134,13 +134,30 @@ def analysera_dimension(df_aktuell, df_yoy_jämförelse, df_mom_jämförelse, di
     return jämförelse_df.head(top_n) if len(jämförelse_df) > top_n else jämförelse_df
 
 
-def generera_kpi_card_kombinerad(titel, värde_aktuell, värde_yoy, värde_mom, förändring_yoy, förändring_mom, är_rabatt=False):
+def generera_kpi_card_kombinerad(titel, värde_aktuell, värde_yoy, värde_mom, förändring_yoy, förändring_mom, är_rabatt=False, månad=10, år=2025):
     """Generera HTML för ett kombinerat KPI-kort med både YoY och MoM."""
+    
+    # Månadsnamn
+    månadsnamn = {
+        1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "Maj", 6: "Jun",
+        7: "Jul", 8: "Aug", 9: "Sep", 10: "Okt", 11: "Nov", 12: "Dec"
+    }
+    
+    # Beräkna föregående månad för MoM-jämförelse
+    if månad == 1:
+        mom_månad = 12
+        mom_år = år - 1
+    else:
+        mom_månad = månad - 1
+        mom_år = år
+    
+    # YoY jämförelse (samma månad föregående år)
+    yoy_år = år - 1
     
     if är_rabatt:
         värde_text = f"{värde_aktuell:.2f}%"
-        yoy_text = f"vs Okt 2024: {värde_yoy:.2f}%"
-        mom_text = f"vs Sep 2025: {värde_mom:.2f}%"
+        yoy_text = f"vs {månadsnamn[månad]} {yoy_år}: {värde_yoy:.2f}%"
+        mom_text = f"vs {månadsnamn[mom_månad]} {mom_år}: {värde_mom:.2f}%"
         yoy_förändring_text = f"{förändring_yoy:+.2f}pp"
         mom_förändring_text = f"{förändring_mom:+.2f}pp"
         yoy_positiv = förändring_yoy < 0  # Lägre rabatt är bättre
@@ -148,12 +165,12 @@ def generera_kpi_card_kombinerad(titel, värde_aktuell, värde_yoy, värde_mom, 
     else:
         if "värde" in titel.lower():
             värde_text = f"{värde_aktuell:,.0f} kr"
-            yoy_text = f"vs Okt 2024: {värde_yoy:,.0f} kr"
-            mom_text = f"vs Sep 2025: {värde_mom:,.0f} kr"
+            yoy_text = f"vs {månadsnamn[månad]} {yoy_år}: {värde_yoy:,.0f} kr"
+            mom_text = f"vs {månadsnamn[mom_månad]} {mom_år}: {värde_mom:,.0f} kr"
         else:
             värde_text = f"{int(värde_aktuell):,}"
-            yoy_text = f"vs Okt 2024: {int(värde_yoy):,}"
-            mom_text = f"vs Sep 2025: {int(värde_mom):,}"
+            yoy_text = f"vs {månadsnamn[månad]} {yoy_år}: {int(värde_yoy):,}"
+            mom_text = f"vs {månadsnamn[mom_månad]} {mom_år}: {int(värde_mom):,}"
         yoy_förändring_text = f"{förändring_yoy:+.1f}%"
         mom_förändring_text = f"{förändring_mom:+.1f}%"
         yoy_positiv = förändring_yoy > 0
@@ -268,35 +285,68 @@ def generera_innehåll_för_filter(df, okt_2025, okt_2024, sep_2025, filter_namn
     # Jämförelser
     yoy = jämför_perioder(kpi_okt_2025, kpi_okt_2024)
     mom = jämför_perioder(kpi_okt_2025, kpi_sep_2025)
+
+
+def generera_innehåll_för_månad_och_kanal(df, månad, år=2025, säljkanal=None):
+    """Generera KPI och tabeller för en specifik månad och säljkanal."""
+    # Filtrera data baserat på säljkanal
+    if säljkanal:
+        df = df[df['SäljKanal'] == säljkanal]
+    
+    # Filtrera för aktuell månad
+    aktuell_period = filtrera_period(df, år, månad)
+    
+    # Filtrera för YoY jämförelse (samma månad föregående år)
+    yoy_period = filtrera_period(df, år - 1, månad)
+    
+    # Filtrera för MoM jämförelse (föregående månad)
+    if månad == 1:
+        # Januari jämför med december föregående år
+        mom_period = filtrera_period(df, år - 1, 12)
+    else:
+        mom_period = filtrera_period(df, år, månad - 1)
+    
+    # Beräkna KPI:er
+    kpi_aktuell = beräkna_huvud_kpi(aktuell_period)
+    kpi_yoy = beräkna_huvud_kpi(yoy_period)
+    kpi_mom = beräkna_huvud_kpi(mom_period)
+    
+    # Jämförelser
+    yoy = jämför_perioder(kpi_aktuell, kpi_yoy)
+    mom = jämför_perioder(kpi_aktuell, kpi_mom)
     
     # Generera kombinerade KPI-kort
     kpi_cards = f"""
         <div class="kpi-grid">
             {generera_kpi_card_kombinerad("Ordervärde", 
-                kpi_okt_2025['Ordervärde'], kpi_okt_2024['Ordervärde'], kpi_sep_2025['Ordervärde'],
-                yoy['Ordervärde']['Förändring%'], mom['Ordervärde']['Förändring%'])}
+                kpi_aktuell['Ordervärde'], kpi_yoy['Ordervärde'], kpi_mom['Ordervärde'],
+                yoy['Ordervärde']['Förändring%'], mom['Ordervärde']['Förändring%'], 
+                månad=månad, år=år)}
             {generera_kpi_card_kombinerad("Försäljning", 
-                kpi_okt_2025['Försäljning'], kpi_okt_2024['Försäljning'], kpi_sep_2025['Försäljning'],
-                yoy['Försäljning']['Förändring%'], mom['Försäljning']['Förändring%'])}
+                kpi_aktuell['Försäljning'], kpi_yoy['Försäljning'], kpi_mom['Försäljning'],
+                yoy['Försäljning']['Förändring%'], mom['Försäljning']['Förändring%'],
+                månad=månad, år=år)}
             {generera_kpi_card_kombinerad("Försäljningsantal", 
-                kpi_okt_2025['Försäljningsantal'], kpi_okt_2024['Försäljningsantal'], kpi_sep_2025['Försäljningsantal'],
-                yoy['Försäljningsantal']['Förändring%'], mom['Försäljningsantal']['Förändring%'])}
+                kpi_aktuell['Försäljningsantal'], kpi_yoy['Försäljningsantal'], kpi_mom['Försäljningsantal'],
+                yoy['Försäljningsantal']['Förändring%'], mom['Försäljningsantal']['Förändring%'],
+                månad=månad, år=år)}
             {generera_kpi_card_kombinerad("Rabatt%", 
-                kpi_okt_2025['Rabatt%'], kpi_okt_2024['Rabatt%'], kpi_sep_2025['Rabatt%'],
-                yoy['Rabatt%']['Förändring_pp'], mom['Rabatt%']['Förändring_pp'], är_rabatt=True)}
+                kpi_aktuell['Rabatt%'], kpi_yoy['Rabatt%'], kpi_mom['Rabatt%'],
+                yoy['Rabatt%']['Förändring_pp'], mom['Rabatt%']['Förändring_pp'], 
+                är_rabatt=True, månad=månad, år=år)}
         </div>
     """
     
-    # Analysera dimensioner (exkludera SäljKanal om vi filtrerar på den)
-    kampanj_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'KampanjKod', top_n=8, exkludera_värden=['Kod saknas'])
-    anställda_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'Antal anställda', top_n=8)
-    bolagsform_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'Bolagsform', top_n=5)
-    kundtyp_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'Kundtyp', top_n=5)
-    sni_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'SNI', top_n=10, exkludera_värden=['-'])
+    # Analysera dimensioner
+    kampanj_analys = analysera_dimension(aktuell_period, yoy_period, mom_period, 'KampanjKod', top_n=8, exkludera_värden=['Kod saknas'])
+    anställda_analys = analysera_dimension(aktuell_period, yoy_period, mom_period, 'Antal anställda', top_n=8)
+    bolagsform_analys = analysera_dimension(aktuell_period, yoy_period, mom_period, 'Bolagsform', top_n=5)
+    kundtyp_analys = analysera_dimension(aktuell_period, yoy_period, mom_period, 'Kundtyp', top_n=5)
+    sni_analys = analysera_dimension(aktuell_period, yoy_period, mom_period, 'SNI', top_n=10, exkludera_värden=['-'])
     
-    # Generera tabeller (visa säljkanal endast för "Alla")
-    if filter_namn == "Alla":
-        säljkanal_analys = analysera_dimension(okt_2025, okt_2024, sep_2025, 'SäljKanal', top_n=5)
+    # Generera tabeller (visa säljkanal endast om vi inte filtrerat på kanal)
+    if säljkanal is None:
+        säljkanal_analys = analysera_dimension(aktuell_period, yoy_period, mom_period, 'SäljKanal', top_n=5)
         säljkanal_tabell = generera_tabell("Säljkanaler", säljkanal_analys, 'SäljKanal', 5)
     else:
         säljkanal_tabell = ""
@@ -324,27 +374,67 @@ def generera_dashboard():
     # Ladda data
     df = ladda_data(csv_fil)
     
-    # Filtrera perioder för ALLA kanaler
-    okt_2025_alla = filtrera_period(df, 2025, 10)
-    okt_2024_alla = filtrera_period(df, 2024, 10)
-    sep_2025_alla = filtrera_period(df, 2025, 9)
+    # Definiera månader som finns i datan
+    månader = [
+        (1, "Januari"), (2, "Februari"), (3, "Mars"), (4, "April"),
+        (5, "Maj"), (6, "Juni"), (7, "Juli"), (8, "Augusti"),
+        (9, "September"), (10, "Oktober")
+    ]
     
-    # Filtrera för Fortnox.Se
-    df_fortnox_se = df[df['SäljKanal'] == 'Fortnox.Se']
-    okt_2025_se = filtrera_period(df_fortnox_se, 2025, 10)
-    okt_2024_se = filtrera_period(df_fortnox_se, 2024, 10)
-    sep_2025_se = filtrera_period(df_fortnox_se, 2025, 9)
+    # Definiera säljkanaler
+    kanaler = [
+        (None, "alla", "Alla kanaler"),
+        ("Fortnox.Se", "fortnox-se", "Fortnox.Se"),
+        ("Fortnox", "fortnox", "Fortnox (Säljare)")
+    ]
     
-    # Filtrera för Fortnox (säljare)
-    df_fortnox = df[df['SäljKanal'] == 'Fortnox']
-    okt_2025_fortnox = filtrera_period(df_fortnox, 2025, 10)
-    okt_2024_fortnox = filtrera_period(df_fortnox, 2024, 10)
-    sep_2025_fortnox = filtrera_period(df_fortnox, 2025, 9)
+    # Generera innehåll för alla kombinationer av månad och kanal
+    månad_kanal_innehåll = {}
+    for månad_nr, månad_namn in månader:
+        for kanal_filter, kanal_id, kanal_visningsnamn in kanaler:
+            kpi_cards, tabeller = generera_innehåll_för_månad_och_kanal(df, månad_nr, 2025, kanal_filter)
+            månad_kanal_innehåll[f"{månad_nr}_{kanal_id}"] = {
+                'kpi': kpi_cards,
+                'tabeller': tabeller,
+                'månad_namn': månad_namn,
+                'kanal_namn': kanal_visningsnamn
+            }
     
-    # Generera innehåll för alla tre filter
-    kpi_cards_alla, tabeller_alla = generera_innehåll_för_filter(df, okt_2025_alla, okt_2024_alla, sep_2025_alla, "Alla")
-    kpi_cards_se, tabeller_se = generera_innehåll_för_filter(df_fortnox_se, okt_2025_se, okt_2024_se, sep_2025_se, "Fortnox.Se")
-    kpi_cards_fortnox, tabeller_fortnox = generera_innehåll_för_filter(df_fortnox, okt_2025_fortnox, okt_2024_fortnox, sep_2025_fortnox, "Fortnox")
+    # Bygg HTML-innehåll dynamiskt för alla månad-kanal kombinationer
+    kpi_sections_html = ""
+    table_sections_html = ""
+    
+    for månad_nr, månad_namn in månader:
+        for kanal_filter, kanal_id, kanal_visningsnamn in kanaler:
+            key = f"{månad_nr}_{kanal_id}"
+            innehåll = månad_kanal_innehåll[key]
+            
+            # Standard: visa oktober + alla kanaler, dölj resten
+            display = "block" if månad_nr == 10 and kanal_id == "alla" else "none"
+            
+            # KPI-sektion
+            kpi_sections_html += f"""
+        <!-- KPI-sektion för {månad_namn} - {kanal_visningsnamn} -->
+        <div class="section" id="kpi-{månad_nr}-{kanal_id}" data-month="{månad_nr}" data-channel="{kanal_id}" style="display: {display};">
+            <div class="section-header">
+                <h2>Nyckeltal {månad_namn} 2025{'' if kanal_id == 'alla' else ' - ' + kanal_visningsnamn}</h2>
+                <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
+            </div>
+            {innehåll['kpi']}
+        </div>
+        """
+            
+            # Tabell-sektion
+            table_sections_html += f"""
+        <!-- Detaljerad analys för {månad_namn} - {kanal_visningsnamn} -->
+        <div class="section" id="tabeller-{månad_nr}-{kanal_id}" data-month="{månad_nr}" data-channel="{kanal_id}" style="display: {display};">
+            <div class="section-header">
+                <h2>Detaljerad Analys{'' if kanal_id == 'alla' else ' - ' + kanal_visningsnamn}</h2>
+                <p class="subtitle">Top-prestationer och trender per dimension</p>
+            </div>
+            {innehåll['tabeller']}
+        </div>
+        """
     
     # Skapa HTML-dokument
     html_content = f"""
@@ -356,7 +446,7 @@ def generera_dashboard():
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
     <meta http-equiv="X-Robots-Tag" content="noindex, nofollow, noarchive, nosnippet">
-    <title>Försäljningsrapport Oktober 2025 - Fortnox</title>
+    <title>Försäljningsrapport 2025 - Fortnox</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1028,83 +1118,52 @@ def generera_dashboard():
     <div id="mainContent" class="content-hidden">
     <div class="container">
         <div class="header">
-            <h1>📊 Försäljningsrapport Oktober 2025</h1>
+            <h1>📊 Försäljningsrapport 2025</h1>
             <div class="header-meta">
                 Genererad: {datetime.now().strftime('%Y-%m-%d %H:%M')} | 
-                Period: Oktober 2025 | 
+                <span id="current-period">Oktober 2025</span> | 
                 Jämförelser: YoY & MoM
             </div>
         </div>
         
-        <!-- Filter-knappar -->
+        <!-- Månadsfilter -->
+        <div class="filter-section">
+            <span class="filter-label">Välj månad:</span>
+            <div class="filter-buttons">
+                <button class="filter-button" onclick="switchMonth(1)" data-month="1">Januari</button>
+                <button class="filter-button" onclick="switchMonth(2)" data-month="2">Februari</button>
+                <button class="filter-button" onclick="switchMonth(3)" data-month="3">Mars</button>
+                <button class="filter-button" onclick="switchMonth(4)" data-month="4">April</button>
+                <button class="filter-button" onclick="switchMonth(5)" data-month="5">Maj</button>
+                <button class="filter-button" onclick="switchMonth(6)" data-month="6">Juni</button>
+                <button class="filter-button" onclick="switchMonth(7)" data-month="7">Juli</button>
+                <button class="filter-button" onclick="switchMonth(8)" data-month="8">Augusti</button>
+                <button class="filter-button" onclick="switchMonth(9)" data-month="9">September</button>
+                <button class="filter-button active" onclick="switchMonth(10)" data-month="10">Oktober</button>
+            </div>
+        </div>
+        
+        <!-- Säljkanalsfilter -->
         <div class="filter-section">
             <span class="filter-label">Filtrera på säljkanal:</span>
             <div class="filter-buttons">
-                <button class="filter-button active" onclick="switchFilter('alla')" data-filter="alla">
+                <button class="filter-button active" onclick="switchChannel('alla')" data-channel="alla">
                     📊 Alla kanaler
                 </button>
-                <button class="filter-button" onclick="switchFilter('fortnox-se')" data-filter="fortnox-se">
+                <button class="filter-button" onclick="switchChannel('fortnox-se')" data-channel="fortnox-se">
                     🌐 Fortnox.Se
                 </button>
-                <button class="filter-button" onclick="switchFilter('fortnox')" data-filter="fortnox">
+                <button class="filter-button" onclick="switchChannel('fortnox')" data-channel="fortnox">
                     👤 Fortnox (Säljare)
                 </button>
             </div>
         </div>
         
-        <!-- KPI-sektion för "Alla" -->
-        <div class="section" id="kpi-alla" data-filter-content="alla">
-            <div class="section-header">
-                <h2>Nyckeltal Oktober 2025</h2>
-                <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
-            </div>
-            {kpi_cards_alla}
-        </div>
+        <!-- KPI-sektioner (genererade dynamiskt) -->
+        {kpi_sections_html}
         
-        <!-- KPI-sektion för "Fortnox.Se" -->
-        <div class="section" id="kpi-fortnox-se" data-filter-content="fortnox-se" style="display: none;">
-            <div class="section-header">
-                <h2>Nyckeltal Oktober 2025 - Fortnox.Se</h2>
-                <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
-            </div>
-            {kpi_cards_se}
-        </div>
-        
-        <!-- KPI-sektion för "Fortnox (Säljare)" -->
-        <div class="section" id="kpi-fortnox" data-filter-content="fortnox" style="display: none;">
-            <div class="section-header">
-                <h2>Nyckeltal Oktober 2025 - Fortnox (Säljare)</h2>
-                <p class="subtitle">Jämförelser Year-over-Year & Month-over-Month</p>
-            </div>
-            {kpi_cards_fortnox}
-        </div>
-        
-        <!-- Detaljerad analys för "Alla" -->
-        <div class="section" id="tabeller-alla" data-filter-content="alla">
-            <div class="section-header">
-                <h2>Detaljerad Analys</h2>
-                <p class="subtitle">Top-prestationer och trender per dimension</p>
-            </div>
-            {tabeller_alla}
-        </div>
-        
-        <!-- Detaljerad analys för "Fortnox.Se" -->
-        <div class="section" id="tabeller-fortnox-se" data-filter-content="fortnox-se" style="display: none;">
-            <div class="section-header">
-                <h2>Detaljerad Analys - Fortnox.Se</h2>
-                <p class="subtitle">Top-prestationer och trender per dimension</p>
-            </div>
-            {tabeller_se}
-        </div>
-        
-        <!-- Detaljerad analys för "Fortnox (Säljare)" -->
-        <div class="section" id="tabeller-fortnox" data-filter-content="fortnox" style="display: none;">
-            <div class="section-header">
-                <h2>Detaljerad Analys - Fortnox (Säljare)</h2>
-                <p class="subtitle">Top-prestationer och trender per dimension</p>
-            </div>
-            {tabeller_fortnox}
-        </div>
+        <!-- Tabell-sektioner (genererade dynamiskt) -->
+        {table_sections_html}
         
         <div class="footer">
             <p>Rapport genererad med Fortnox Analytics Tool</p>
@@ -1114,21 +1173,65 @@ def generera_dashboard():
     </div> <!-- Stäng mainContent div -->
     
     <script>
-        // Funktion för att växla mellan filter
-        function switchFilter(filterName) {{
-            // Uppdatera aktiv knapp
-            document.querySelectorAll('.filter-button').forEach(btn => {{
+        // Håll reda på aktuell månad och kanal
+        let currentMonth = 10;
+        let currentChannel = 'alla';
+        
+        // Månadsnamn för visning
+        const monthNames = {{
+            1: 'Januari', 2: 'Februari', 3: 'Mars', 4: 'April',
+            5: 'Maj', 6: 'Juni', 7: 'Juli', 8: 'Augusti',
+            9: 'September', 10: 'Oktober', 11: 'November', 12: 'December'
+        }};
+        
+        // Funktion för att uppdatera period-text
+        function updatePeriodText() {{
+            document.getElementById('current-period').textContent = monthNames[currentMonth] + ' 2025';
+        }}
+        
+        // Funktion för att växla månad
+        function switchMonth(month) {{
+            currentMonth = month;
+            
+            // Uppdatera aktiv månadsknapp
+            document.querySelectorAll('[data-month]').forEach(btn => {{
+                if (btn.hasAttribute('onclick')) {{ // Endast månadsfilter-knappar
+                    btn.classList.remove('active');
+                }}
+            }});
+            document.querySelector(`[data-month="${{month}}"][onclick*="switchMonth"]`).classList.add('active');
+            
+            // Uppdatera period-text
+            updatePeriodText();
+            
+            // Visa rätt innehåll
+            showContent();
+        }}
+        
+        // Funktion för att växla kanal
+        function switchChannel(channel) {{
+            currentChannel = channel;
+            
+            // Uppdatera aktiv kanalknapp
+            document.querySelectorAll('[data-channel][onclick*="switchChannel"]').forEach(btn => {{
                 btn.classList.remove('active');
             }});
-            document.querySelector(`[data-filter="${{filterName}}"]`).classList.add('active');
+            document.querySelector(`[data-channel="${{channel}}"][onclick*="switchChannel"]`).classList.add('active');
             
-            // Visa/dölj innehåll
-            document.querySelectorAll('[data-filter-content]').forEach(section => {{
-                if (section.getAttribute('data-filter-content') === filterName) {{
-                    section.style.display = 'block';
-                }} else {{
-                    section.style.display = 'none';
-                }}
+            // Visa rätt innehåll
+            showContent();
+        }}
+        
+        // Funktion för att visa rätt innehåll baserat på månad och kanal
+        function showContent() {{
+            // Dölj allt innehåll
+            document.querySelectorAll('[data-month][data-channel]').forEach(section => {{
+                section.style.display = 'none';
+            }});
+            
+            // Visa innehåll för vald månad och kanal
+            document.querySelectorAll(`[data-month="${{currentMonth}}"][data-channel="${{currentChannel}}"]`).forEach(section => {{
+                section.style.display = 'block';
             }});
         }}
     </script>
