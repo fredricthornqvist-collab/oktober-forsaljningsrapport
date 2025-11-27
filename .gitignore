@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data files (optional - ta bort om du vill committa CSV)
+*.csv
+
+# Output (optional - om du inte vill committa HTML)
+# oktober_dashboard.html
