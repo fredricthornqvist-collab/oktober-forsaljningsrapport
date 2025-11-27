@@ -814,9 +814,151 @@ def generera_dashboard():
                 color: var(--color-neutral) !important;
             }}
         }}
+        
+        /* Lösenordsskydd styling */
+        .login-overlay {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0A2540 0%, #00B888 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }}
+        
+        .login-box {{
+            background: white;
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }}
+        
+        .login-box h2 {{
+            color: var(--fortnox-navy);
+            margin-bottom: 0.5rem;
+            font-size: 1.75rem;
+        }}
+        
+        .login-box p {{
+            color: var(--fortnox-gray);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }}
+        
+        .login-input {{
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--fortnox-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s ease;
+        }}
+        
+        .login-input:focus {{
+            outline: none;
+            border-color: var(--fortnox-green);
+        }}
+        
+        .login-button {{
+            width: 100%;
+            padding: 1rem;
+            background: var(--fortnox-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.3s ease;
+        }}
+        
+        .login-button:hover {{
+            background: #009670;
+        }}
+        
+        .login-error {{
+            color: var(--color-negative);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }}
+        
+        .content-hidden {{
+            display: none;
+        }}
     </style>
+    <script>
+        // Lösenordsskydd
+        const CORRECT_PASSWORD = 'fortnoxftw2025';
+        
+        function checkPassword() {{
+            const input = document.getElementById('passwordInput');
+            const error = document.getElementById('loginError');
+            const overlay = document.getElementById('loginOverlay');
+            const content = document.getElementById('mainContent');
+            
+            if (input.value === CORRECT_PASSWORD) {{
+                overlay.style.display = 'none';
+                content.classList.remove('content-hidden');
+                // Spara i sessionStorage så användaren inte behöver logga in igen under sessionen
+                sessionStorage.setItem('authenticated', 'true');
+            }} else {{
+                error.style.display = 'block';
+                input.value = '';
+                input.focus();
+            }}
+        }}
+        
+        // Kolla om användaren redan är autentiserad
+        window.addEventListener('DOMContentLoaded', function() {{
+            if (sessionStorage.getItem('authenticated') === 'true') {{
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainContent').classList.remove('content-hidden');
+            }}
+        }});
+        
+        // Tillåt Enter-tangent för att logga in
+        document.addEventListener('DOMContentLoaded', function() {{
+            const input = document.getElementById('passwordInput');
+            if (input) {{
+                input.addEventListener('keypress', function(e) {{
+                    if (e.key === 'Enter') {{
+                        checkPassword();
+                    }}
+                }});
+            }}
+        }});
+    </script>
 </head>
 <body>
+    <!-- Lösenordsskydd overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <h2>🔒 Skyddad Rapport</h2>
+            <p>Ange lösenord för att visa försäljningsrapporten</p>
+            <input 
+                type="password" 
+                id="passwordInput" 
+                class="login-input" 
+                placeholder="Ange lösenord"
+                autocomplete="off"
+            >
+            <button class="login-button" onclick="checkPassword()">Lås upp</button>
+            <div id="loginError" class="login-error">❌ Felaktigt lösenord. Försök igen.</div>
+        </div>
+    </div>
+    
+    <!-- Huvudinnehåll (dolt tills rätt lösenord anges) -->
+    <div id="mainContent" class="content-hidden">
     <div class="container">
         <div class="header">
             <h1>📊 Försäljningsrapport Oktober 2025</h1>
@@ -840,6 +982,7 @@ def generera_dashboard():
             <p>© {datetime.now().year} Fortnox AB. Alla rättigheter förbehållna.</p>
         </div>
     </div>
+    </div> <!-- Stäng mainContent div -->
 </body>
 </html>
     """
