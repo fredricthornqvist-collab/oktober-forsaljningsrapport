@@ -25,6 +25,10 @@ def ladda_data(filpath):
     df['År'] = df['ÅrMånad'] // 100
     df['Månad'] = df['ÅrMånad'] % 100
     
+    # Slå ihop kampanjkoder
+    # GRATTISNYSTARTAD och NYSTARTAD ska båda visas som NYSTARTAD
+    df['KampanjKod'] = df['KampanjKod'].replace('GRATTISNYSTARTAD', 'NYSTARTAD')
+    
     # Beräkna ordervärde (försäljning + rabattvärde)
     df['Ordervärde'] = df['Försäljning'] + df['Rabattvärde']
     
