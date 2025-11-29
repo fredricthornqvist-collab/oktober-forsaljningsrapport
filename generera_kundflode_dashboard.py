@@ -65,6 +65,46 @@ def ladda_kundstock_data(filpath_2024, filpath_2025):
     return df
 
 
+def ladda_kundmål_data(filpath):
+    """Ladda och förbered kundmål."""
+    df = pd.read_csv(filpath)
+    
+    # Mappa månadsnamn till nummer
+    månad_map = {
+        'Jan': 1, 'Feb': 2, 'Mars': 3, 'Apr': 4, 'Maj': 5, 'Juni': 6,
+        'Juli': 7, 'Aug': 8, 'Sep': 9, 'Okt': 10, 'Nov': 11, 'Dec': 12
+    }
+    df['Månad'] = df['Månad'].map(månad_map)
+    
+    # Rensa numeriska kolumner (non-breaking spaces)
+    def rensa_nummer(värde):
+        if pd.isna(värde):
+            return 0
+        if isinstance(värde, (int, float)):
+            return int(värde)
+        return int(str(värde).replace('\xa0', '').replace(' ', '').replace(',', ''))
+    
+    df['Byrå'] = df['Byrå'].apply(rensa_nummer)
+    df['Winback'] = df['Winback'].apply(rensa_nummer)
+    df['säljare'] = df['säljare'].apply(rensa_nummer)
+    df['fortnox.se'] = df['fortnox.se'].apply(rensa_nummer)
+    df['Cling/Boardeaser/Okänt'] = df['Cling/Boardeaser/Okänt'].apply(rensa_nummer)
+    df['Totalt'] = df['Totalt'].apply(rensa_nummer)
+    
+    # Omforma till long format med kanal-kategorier
+    mål_data = []
+    for _, row in df.iterrows():
+        månad = row['Månad']
+        mål_data.append({'Månad': månad, 'Kanal': 'byrå', 'Mål': row['Byrå']})
+        mål_data.append({'Månad': månad, 'Kanal': 'winback', 'Mål': row['Winback']})
+        mål_data.append({'Månad': månad, 'Kanal': 'fortnox', 'Mål': row['säljare']})
+        mål_data.append({'Månad': månad, 'Kanal': 'fortnox.se', 'Mål': row['fortnox.se']})
+        mål_data.append({'Månad': månad, 'Kanal': 'övrigt', 'Mål': row['Cling/Boardeaser/Okänt']})
+        mål_data.append({'Månad': månad, 'Kanal': 'alla', 'Mål': row['Totalt']})
+    
+    return pd.DataFrame(mål_data)
+
+
 def filtrera_period(df, år, månad):
     """Filtrera data för en specifik period."""
     return df[(df['År'] == år) & (df['Månad'] == månad)].copy()
@@ -118,8 +158,8 @@ def jämför_perioder(kpi_aktuell, kpi_jämförelse):
 
 def generera_kpi_card_kombinerad(titel, värde_aktuell, värde_yoy, värde_mom, 
                                  förändr_yoy, förändr_mom, förändr_yoy_pct, förändr_mom_pct,
-                                 månad=10, år=2025):
-    """Generera HTML för ett kombinerat KPI-kort med både YoY och MoM."""
+                                 månad=10, år=2025, mål=None):
+    """Generera HTML för ett kombinerat KPI-kort med både YoY och MoM samt mål."""
     
     månadsnamn = {
         1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "Maj", 6: "Jun",
@@ -146,6 +186,24 @@ def generera_kpi_card_kombinerad(titel, värde_aktuell, värde_yoy, värde_mom,
     mom_pil = "↑" if mom_positiv else "↓" if förändr_mom < 0 else "→"
     mom_färg = "positive" if mom_positiv else "negative" if förändr_mom < 0 else "neutral"
     
+    # Lägg till målrad om mål finns
+    mål_html = ""
+    if mål is not None and mål > 0:
+        uppfyllelse = (värde_aktuell / mål) * 100
+        mål_diff = värde_aktuell - mål
+        mål_uppnått = uppfyllelse >= 100
+        mål_pil = "✓" if mål_uppnått else "✗"
+        mål_färg = "positive" if mål_uppnått else "negative"
+        mål_html = f"""
+            <div class="comparison-row">
+                <span class="comparison-label">Mål:</span>
+                <span class="comparison-value">{int(mål):,}</span>
+                <span class="kpi-change-inline {mål_färg}">
+                    <span class="arrow-small">{mål_pil}</span>
+                    {uppfyllelse:.1f}% ({mål_diff:+,})
+                </span>
+            </div>"""
+    
     return f"""
     <div class="kpi-card">
         <div class="kpi-title">{titel}</div>
@@ -166,7 +224,7 @@ def generera_kpi_card_kombinerad(titel, värde_aktuell, värde_yoy, värde_mom,
                     <span class="arrow-small">{mom_pil}</span>
                     {mom_förändring_text}
                 </span>
-            </div>
+            </div>{mål_html}
         </div>
     </div>
     """
@@ -400,7 +458,7 @@ def generera_tabell_kundstock(titel, df, dimension_namn, max_rader=10):
     """
 
 
-def generera_innehåll_nya_kunder(df_nya, månad, år, kanal='alla'):
+def generera_innehåll_nya_kunder(df_nya, df_mål, månad, år, kanal='alla'):
     """Generera innehåll för NYA KUNDER vy."""
     
     # Filtrera på månad
@@ -421,6 +479,13 @@ def generera_innehåll_nya_kunder(df_nya, månad, år, kanal='alla'):
     jmf_yoy = jämför_perioder(kpi_nya_aktuell, kpi_nya_yoy)
     jmf_mom = jämför_perioder(kpi_nya_aktuell, kpi_nya_mom)
     
+    # Hämta mål för denna månad och kanal
+    mål_värde = None
+    if df_mål is not None:
+        mål_rad = df_mål[(df_mål['Månad'] == månad) & (df_mål['Kanal'] == kanal)]
+        if not mål_rad.empty:
+            mål_värde = int(mål_rad.iloc[0]['Mål'])
+    
     # KPI-kort - endast totalen
     kpi_html = f"""
         <div class="kpi-grid">
@@ -428,7 +493,7 @@ def generera_innehåll_nya_kunder(df_nya, månad, år, kanal='alla'):
                 kpi_nya_aktuell['Nya kunder'], kpi_nya_yoy['Nya kunder'], kpi_nya_mom['Nya kunder'],
                 jmf_yoy['Nya kunder']['Förändring'], jmf_mom['Nya kunder']['Förändring'],
                 jmf_yoy['Nya kunder']['Förändring%'], jmf_mom['Nya kunder']['Förändring%'],
-                månad=månad, år=år)}
+                månad=månad, år=år, mål=mål_värde)}
         </div>
     """
     
@@ -525,10 +590,12 @@ def generera_dashboard():
     nya_kunder_fil = Path(__file__).parent / "3726d67f-37f5-4502-8e8d-c191ed5167cc - Sheet1.csv"
     kundstock_2024_fil = Path(__file__).parent / "2024-kundstock - Sheet1.csv"
     kundstock_2025_fil = Path(__file__).parent / "2025 kundstock - Sheet1.csv"
+    kundmål_fil = Path(__file__).parent / "kundmål - Sheet1.csv"
     
     # Ladda data
     df_nya = ladda_nya_kunder_data(nya_kunder_fil)
     df_stock = ladda_kundstock_data(kundstock_2024_fil, kundstock_2025_fil)
+    df_mål = ladda_kundmål_data(kundmål_fil)
     
     # Definiera månader
     månader = [
@@ -553,7 +620,7 @@ def generera_dashboard():
     for månad_nr, månad_namn in månader:
         # NYA KUNDER vy - för alla kanaler
         for kanal_id, kanal_namn in kanaler:
-            kpi, tab = generera_innehåll_nya_kunder(df_nya, månad_nr, 2025, kanal_id)
+            kpi, tab = generera_innehåll_nya_kunder(df_nya, df_mål, månad_nr, 2025, kanal_id)
             key = f"nya_{månad_nr}_{kanal_id}"
             innehåll_map[key] = {'kpi': kpi, 'tabeller': tab, 'månad': månad_namn, 'kanal': kanal_namn}
         
